@@ -1,14 +1,13 @@
-#python
-check_websocket_if_connect=None
-# try fix ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:2361)
-ssl_Mutual_exclusion=False#mutex read write
-#if false websocket can sent self.websocket.send(data)
-#else can not sent self.websocket.send(data)
-ssl_Mutual_exclusion_write=False#if thread wirite 
+import threading
 
-SSID=None
+check_websocket_if_connect = None
 
-check_websocket_if_error=False
-websocket_error_reason=None
+# Real mutex replacing the old boolean flags that provided no actual mutual exclusion
+_ws_lock = threading.Lock()
 
-balance_id=None
+SSID = None
+
+check_websocket_if_error = False
+websocket_error_reason = None
+
+balance_id = None

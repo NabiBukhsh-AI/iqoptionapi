@@ -186,8 +186,8 @@ class IQ_Option:
     def get_financial_information(self, activeId):
         self.api.financial_information = None
         self.api.get_financial_information(activeId)
-        while self.api.financial_information == None:
-            pass
+        while self.api.financial_information is None:
+            time.sleep(0.001)
         return self.api.financial_information
 
     def get_leader_board(self, country, from_position, to_position, near_traders_count, user_country_id=0, near_traders_country_count=0, top_country_count=0, top_count=0, top_type=2):
@@ -197,8 +197,8 @@ class IQ_Option:
         self.api.Get_Leader_Board(country_id, user_country_id, from_position, to_position,
                                   near_traders_country_count, near_traders_count, top_country_count, top_count, top_type)
 
-        while self.api.leaderboard_deals_client == None:
-            pass
+        while self.api.leaderboard_deals_client is None:
+            time.sleep(0.001)
         return self.api.leaderboard_deals_client
 
     def get_instruments(self, type):
@@ -209,8 +209,8 @@ class IQ_Option:
             try:
                 self.api.get_instruments(type)
                 start = time.time()
-                while self.api.instruments == None and time.time() - start < 10:
-                    pass
+                while self.api.instruments is None and time.time() - start < 10:
+                    time.sleep(0.001)
             except:
                 logging.error('**error** api.get_instruments need reconnect')
                 self.connect()
@@ -728,8 +728,8 @@ class IQ_Option:
     def get_technical_indicators(self, ACTIVES):
         request_id = self.api.get_Technical_indicators(
             OP_code.ACTIVES[ACTIVES])
-        while self.api.technical_indicators.get(request_id) == None:
-            pass
+        while self.api.technical_indicators.get(request_id) is None:
+            time.sleep(0.001)
         return self.api.technical_indicators[request_id]
 
 ##############################################################################################
@@ -739,7 +739,7 @@ class IQ_Option:
 
     def check_binary_order(self, order_id):
         while order_id not in self.api.order_binary:
-            pass
+            time.sleep(0.001)
         your_order = self.api.order_binary[order_id]
         del self.api.order_binary[order_id]
         return your_order
@@ -753,6 +753,7 @@ class IQ_Option:
                     break
             except:
                 pass
+            time.sleep(0.001)
         self.api.listinfodata.delete(id_number)
         return listinfodata_dict["win"]
 
@@ -775,10 +776,11 @@ class IQ_Option:
     def check_win_v4(self, id_number):
         while True:
             try:
-                if self.api.socket_option_closed[id_number] != None:
+                if self.api.socket_option_closed[id_number] is not None:
                     break
             except:
                 pass
+            time.sleep(0.001)
         x = self.api.socket_option_closed[id_number]
         return x['msg']['win'], (0 if x['msg']['win'] == 'equal' else float(x['msg']['sum']) * -1 if x['msg']['win'] == 'loose' else float(x['msg']['win_amount']) - float(x['msg']['sum']))
 
@@ -840,7 +842,7 @@ class IQ_Option:
                 self.api.buyv3(
                     price[idx], OP_code.ACTIVES[ACTIVES[idx]], ACTION[idx], expirations[idx], idx)
             while len(self.api.buy_multi_option) < buy_len:
-                pass
+                time.sleep(0.001)
             buy_id = []
             for key in sorted(self.api.buy_multi_option.keys()):
                 try:
@@ -941,12 +943,12 @@ class IQ_Option:
         self.api.underlying_list_data = None
         self.api.get_digital_underlying()
         start_t = time.time()
-        while self.api.underlying_list_data == None:
+        while self.api.underlying_list_data is None:
             if time.time() - start_t >= 30:
                 logging.error(
                     '**warning** get_digital_underlying_list_data late 30 sec')
                 return None
-
+            time.sleep(0.001)
         return self.api.underlying_list_data
 
     def get_strike_list(self, ACTIVES, duration):
@@ -977,15 +979,12 @@ class IQ_Option:
 
     def get_instrument_quites_generated_data(self, ACTIVE, duration):
         while self.api.instrument_quotes_generated_raw_data[ACTIVE][duration * 60] == {}:
-            pass
+            time.sleep(0.001)
         return self.api.instrument_quotes_generated_raw_data[ACTIVE][duration * 60]
 
     def get_realtime_strike_list(self, ACTIVE, duration):
-        while True:
-            if not self.api.instrument_quites_generated_data[ACTIVE][duration * 60]:
-                pass
-            else:
-                break
+        while not self.api.instrument_quites_generated_data[ACTIVE][duration * 60]:
+            time.sleep(0.001)
         """
         strike_list dict: price:{call:id,put:id}
         """
@@ -1060,8 +1059,8 @@ class IQ_Option:
 
         request_id = self.api.place_digital_option(instrument_id, amount)
 
-        while self.api.digital_option_placed_id.get(request_id) == None:
-            pass
+        while self.api.digital_option_placed_id.get(request_id) is None:
+            time.sleep(0.001)
         digital_order_id = self.api.digital_option_placed_id.get(request_id)
         if isinstance(digital_order_id, int):
             return True, digital_order_id
@@ -1083,7 +1082,7 @@ class IQ_Option:
             return None
 
         while self.get_async_order(position_id)["position-changed"] == {}:
-            pass
+            time.sleep(0.001)
         # ___________________/*position*/_________________
         position = self.get_async_order(position_id)["position-changed"]["msg"]
         # doEURUSD201911040628PT1MPSPT
@@ -1172,21 +1171,22 @@ class IQ_Option:
         self.api.digital_option_placed_id = None
         self.api.place_digital_option(instrument_id, amount)
         start_t = time.time()
-        while self.api.digital_option_placed_id == None:
+        while self.api.digital_option_placed_id is None:
             if time.time() - start_t > 30:
                 logging.error('buy_digital loss digital_option_placed_id')
                 return False, None
+            time.sleep(0.001)
         return True, self.api.digital_option_placed_id
 
     def close_digital_option(self, position_id):
         self.api.result = None
         while self.get_async_order(position_id)["position-changed"] == {}:
-            pass
+            time.sleep(0.001)
         position_changed = self.get_async_order(
             position_id)["position-changed"]["msg"]
         self.api.close_digital_option(position_changed["external_id"])
-        while self.api.result == None:
-            pass
+        while self.api.result is None:
+            time.sleep(0.001)
         return self.api.result
 
     def check_win_digital(self, buy_order_id, polling_time):
@@ -1201,9 +1201,8 @@ class IQ_Option:
                     return data["msg"]["position"]["pnl_realized"] - data["msg"]["position"]["buy_amount"]
 
     def check_win_digital_v2(self, buy_order_id):
-
         while self.get_async_order(buy_order_id)["position-changed"] == {}:
-            pass
+            time.sleep(0.001)
         order_data = self.get_async_order(
             buy_order_id)["position-changed"]["msg"]
         if order_data != None:
@@ -1241,8 +1240,8 @@ class IQ_Option:
             use_token_for_commission=use_token_for_commission
         )
 
-        while self.api.buy_order_id == None:
-            pass
+        while self.api.buy_order_id is None:
+            time.sleep(0.001)
         check, data = self.get_order(self.api.buy_order_id)
         while data["status"] == "pending_new":
             check, data = self.get_order(self.api.buy_order_id)
@@ -1260,8 +1259,8 @@ class IQ_Option:
     def change_auto_margin_call(self, ID_Name, ID, auto_margin_call):
         self.api.auto_margin_call_changed_respond = None
         self.api.change_auto_margin_call(ID_Name, ID, auto_margin_call)
-        while self.api.auto_margin_call_changed_respond == None:
-            pass
+        while self.api.auto_margin_call_changed_respond is None:
+            time.sleep(0.001)
         if self.api.auto_margin_call_changed_respond["status"] == 2000:
             return True, self.api.auto_margin_call_changed_respond
         else:
@@ -1290,8 +1289,8 @@ class IQ_Option:
                 use_trail_stop=use_trail_stop)
             self.change_auto_margin_call(
                 ID_Name=ID_Name, ID=ID, auto_margin_call=auto_margin_call)
-            while self.api.tpsl_changed_respond == None:
-                pass
+            while self.api.tpsl_changed_respond is None:
+                time.sleep(0.001)
             if self.api.tpsl_changed_respond["status"] == 2000:
                 return True, self.api.tpsl_changed_respond["msg"]
             else:
@@ -1312,8 +1311,8 @@ class IQ_Option:
         # new
         self.api.order_data = None
         self.api.get_order(buy_order_id)
-        while self.api.order_data == None:
-            pass
+        while self.api.order_data is None:
+            time.sleep(0.001)
         if self.api.order_data["status"] == 2000:
             return True, self.api.order_data["msg"]
         else:
@@ -1322,8 +1321,8 @@ class IQ_Option:
     def get_pending(self, instrument_type):
         self.api.deferred_orders = None
         self.api.get_pending(instrument_type)
-        while self.api.deferred_orders == None:
-            pass
+        while self.api.deferred_orders is None:
+            time.sleep(0.001)
         if self.api.deferred_orders["status"] == 2000:
             return True, self.api.deferred_orders["msg"]
         else:
@@ -1333,8 +1332,8 @@ class IQ_Option:
     def get_positions(self, instrument_type):
         self.api.positions = None
         self.api.get_positions(instrument_type)
-        while self.api.positions == None:
-            pass
+        while self.api.positions is None:
+            time.sleep(0.001)
         if self.api.positions["status"] == 2000:
             return True, self.api.positions["msg"]
         else:
@@ -1345,8 +1344,8 @@ class IQ_Option:
         check, order_data = self.get_order(buy_order_id)
         position_id = order_data["position_id"]
         self.api.get_position(position_id)
-        while self.api.position == None:
-            pass
+        while self.api.position is None:
+            time.sleep(0.001)
         if self.api.position["status"] == 2000:
             return True, self.api.position["msg"]
         else:
@@ -1357,27 +1356,26 @@ class IQ_Option:
     def get_digital_position_by_position_id(self, position_id):
         self.api.position = None
         self.api.get_digital_position(position_id)
-        while self.api.position == None:
-            pass
+        while self.api.position is None:
+            time.sleep(0.001)
         return self.api.position
 
     def get_digital_position(self, order_id):
         self.api.position = None
         while self.get_async_order(order_id)["position-changed"] == {}:
-            pass
+            time.sleep(0.001)
         position_id = self.get_async_order(
             order_id)["position-changed"]["msg"]["external_id"]
         self.api.get_digital_position(position_id)
-        while self.api.position == None:
-            pass
+        while self.api.position is None:
+            time.sleep(0.001)
         return self.api.position
 
     def get_position_history(self, instrument_type):
         self.api.position_history = None
         self.api.get_position_history(instrument_type)
-        while self.api.position_history == None:
-            pass
-
+        while self.api.position_history is None:
+            time.sleep(0.001)
         if self.api.position_history["status"] == 2000:
             return True, self.api.position_history["msg"]
         else:
@@ -1388,9 +1386,8 @@ class IQ_Option:
         self.api.position_history_v2 = None
         self.api.get_position_history_v2(
             instrument_type, limit, offset, start, end)
-        while self.api.position_history_v2 == None:
-            pass
-
+        while self.api.position_history_v2 is None:
+            time.sleep(0.001)
         if self.api.position_history_v2["status"] == 2000:
             return True, self.api.position_history_v2["msg"]
         else:
@@ -1403,8 +1400,8 @@ class IQ_Option:
         else:
             self.api.get_available_leverages(
                 instrument_type, OP_code.ACTIVES[actives])
-        while self.api.available_leverages == None:
-            pass
+        while self.api.available_leverages is None:
+            time.sleep(0.001)
         if self.api.available_leverages["status"] == 2000:
             return True, self.api.available_leverages["msg"]
         else:
@@ -1413,8 +1410,8 @@ class IQ_Option:
     def cancel_order(self, buy_order_id):
         self.api.order_canceled = None
         self.api.cancel_order(buy_order_id)
-        while self.api.order_canceled == None:
-            pass
+        while self.api.order_canceled is None:
+            time.sleep(0.001)
         if self.api.order_canceled["status"] == 2000:
             return True
         else:
@@ -1425,8 +1422,8 @@ class IQ_Option:
         if data["position_id"] != None:
             self.api.close_position_data = None
             self.api.close_position(data["position_id"])
-            while self.api.close_position_data == None:
-                pass
+            while self.api.close_position_data is None:
+                time.sleep(0.001)
             if self.api.close_position_data["status"] == 2000:
                 return True
             else:
@@ -1435,12 +1432,12 @@ class IQ_Option:
             return False
 
     def close_position_v2(self, position_id):
-        while self.get_async_order(position_id) == None:
-            pass
+        while self.get_async_order(position_id) is None:
+            time.sleep(0.001)
         position_changed = self.get_async_order(position_id)
         self.api.close_position(position_changed["id"])
-        while self.api.close_position_data == None:
-            pass
+        while self.api.close_position_data is None:
+            time.sleep(0.001)
         if self.api.close_position_data["status"] == 2000:
             return True
         else:
@@ -1449,8 +1446,8 @@ class IQ_Option:
     def get_overnight_fee(self, instrument_type, active):
         self.api.overnight_fee = None
         self.api.get_overnight_fee(instrument_type, OP_code.ACTIVES[active])
-        while self.api.overnight_fee == None:
-            pass
+        while self.api.overnight_fee is None:
+            time.sleep(0.001)
         if self.api.overnight_fee["status"] == 2000:
             return True, self.api.overnight_fee["msg"]
         else:
@@ -1512,9 +1509,8 @@ class IQ_Option:
     def get_user_profile_client(self, user_id):
         self.api.user_profile_client = None
         self.api.Get_User_Profile_Client(user_id)
-        while self.api.user_profile_client == None:
-            pass
-
+        while self.api.user_profile_client is None:
+            time.sleep(0.001)
         return self.api.user_profile_client
 
     def request_leaderboard_userinfo_deals_client(self, user_id, country_id):

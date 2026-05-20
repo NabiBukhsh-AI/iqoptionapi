@@ -101,12 +101,14 @@ class WebsocketClient(object):
 
     def on_message(self, wsapp, message):  # pylint: disable=unused-argument
         """Method to process websocket messages."""
-        global_value.ssl_Mutual_exclusion = True
+        with global_value._ws_lock:
+            self._process_message(message)
+
+    def _process_message(self, message):
         logger = logging.getLogger(__name__)
         logger.debug(message)
 
         message = json.loads(str(message))
-
 
         technical_indicators(self.api, message, self.api_dict_clean)
         time_sync(self.api, message)
@@ -163,8 +165,6 @@ class WebsocketClient(object):
         leaderboard_userinfo_deals_client(self.api, message)
         users_availability(self.api, message)
         client_price_generated(self.api, message)
-
-        global_value.ssl_Mutual_exclusion = False
 
     @staticmethod
     def on_error(wss, error):  # pylint: disable=unused-argument

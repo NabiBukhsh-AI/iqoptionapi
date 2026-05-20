@@ -271,12 +271,12 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         data = json.dumps(dict(name=name,
                                msg=msg, request_id=request_id))
 
-        while (global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write) and no_force_send:
-            pass
-        global_value.ssl_Mutual_exclusion_write = True
-        self.websocket.send(data)
+        if no_force_send:
+            with global_value._ws_lock:
+                self.websocket.send(data)
+        else:
+            self.websocket.send(data)
         logger.debug(data)
-        global_value.ssl_Mutual_exclusion_write = False
 
     @property
     def logout(self):
