@@ -1,17 +1,16 @@
-"""A python wrapper for IQ Option API."""
+"""IQ Option API — unofficial Python wrapper, community maintained."""
 
 import logging
 
-def _prepare_logging():
-    """Prepare logger for module IQ Option API."""
-    logger = logging.getLogger(__name__)
-    #https://github.com/Lu-Yi-Hsun/iqoptionapi_private/issues/1
-    #try to fix this problem
-    #logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.NullHandler())
+from iqoptionapi.stable_api import IQ_Option
 
-    websocket_logger = logging.getLogger("websocket")
-    websocket_logger.setLevel(logging.DEBUG)
-    websocket_logger.addHandler(logging.NullHandler())
+__all__ = ["IQ_Option"]
+
+
+def _prepare_logging():
+    logger = logging.getLogger(__name__)
+    logger.addHandler(logging.NullHandler())
+    logging.getLogger("websocket").addHandler(logging.NullHandler())
+
 
 _prepare_logging()

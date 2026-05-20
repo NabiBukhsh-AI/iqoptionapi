@@ -1,3 +1,2 @@
-pylint
-requests
-websocket-client==0.56
+requests>=2.28.0
+websocket-client>=1.6.0,<2.0

@@ -1,9 +1,43 @@
+# Python
+__pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Distribution / packaging
 build/
 dist/
 *.egg-info/
-.vscode/
-/.vs
+*.egg
+MANIFEST
+
+# Virtual environments
 venv/
-.idea
+.venv/
+env/
+.env/
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.vs
+/.vs
+
+# Test artifacts
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local test scripts
 test.py
+test_*.py

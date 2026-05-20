@@ -1,4 +1,5 @@
-# python
+from __future__ import annotations
+
 from iqoptionapi.api import IQOptionAPI
 import iqoptionapi.constants as OP_code
 import iqoptionapi.country_id as Country
@@ -14,6 +15,7 @@ from iqoptionapi.expiration import get_expiration_time, get_remaning_time
 from iqoptionapi.version_control import api_version
 from datetime import datetime, timedelta
 from random import randint
+from typing import Optional, Tuple, List, Dict, Any, Union
 
 
 def nested_dict(n, type):
@@ -78,7 +80,7 @@ class IQ_Option:
         self.SESSION_HEADER = header
         self.SESSION_COOKIE = cookie
 
-    def connect(self, sms_code=None):
+    def connect(self, sms_code: Optional[str] = None) -> Tuple[bool, Optional[str]]:
         try:
             self.api.close()
         except:
@@ -107,8 +109,8 @@ class IQ_Option:
             self.re_subscribe_stream()
 
             # ---------for async get name: "position-changed", microserviceName
-            while global_value.balance_id == None:
-                pass
+            while global_value.balance_id is None:
+                time.sleep(0.001)
 
             self.position_change_all(
                 "subscribeMessage", global_value.balance_id)
@@ -155,15 +157,10 @@ class IQ_Option:
     def connect_2fa(self, sms_code):
         return self.connect(sms_code=sms_code)
 
-    def check_connect(self):
-        # True/False
-        # if not connected, sometimes it's None, sometimes its '0', so
-        # both will fall on this first case
+    def check_connect(self) -> bool:
         if not global_value.check_websocket_if_connect:
             return False
-        else:
-            return True
-        # wait for timestamp getting
+        return True
 
     # _________________________UPDATE ACTIVES OPCODE_____________________
     def get_all_ACTIVES_OPCODE(self):
@@ -382,8 +379,8 @@ class IQ_Option:
     # ______________________________________self.api.getprofile() https________________________________
 
     def get_profile_ansyc(self):
-        while self.api.profile.msg == None:
-            pass
+        while self.api.profile.msg is None:
+            time.sleep(0.001)
         return self.api.profile.msg
 
     """def get_profile(self):
@@ -421,7 +418,7 @@ class IQ_Option:
             time.sleep(self.suspend)
         return self.api.profile.balance"""
 
-    def get_balance(self):
+    def get_balance(self) -> Optional[float]:
 
         balances_raw = self.get_balances()
         for balance in balances_raw["msg"]:
@@ -431,8 +428,8 @@ class IQ_Option:
     def get_balances(self):
         self.api.balances_raw = None
         self.api.get_balances()
-        while self.api.balances_raw == None:
-            pass
+        while self.api.balances_raw is None:
+            time.sleep(0.001)
         return self.api.balances_raw
 
     def get_balance_mode(self):
@@ -451,8 +448,8 @@ class IQ_Option:
     def reset_practice_balance(self):
         self.api.training_balance_reset_request = None
         self.api.reset_training_balance()
-        while self.api.training_balance_reset_request == None:
-            pass
+        while self.api.training_balance_reset_request is None:
+            time.sleep(0.001)
         return self.api.training_balance_reset_request
 
     def position_change_all(self, Main_Name, user_balance_id):
@@ -469,7 +466,7 @@ class IQ_Option:
             self.api.portfolio(
                 Main_Name=Main_Name, name="portfolio.order-changed", instrument_type=ins)
 
-    def change_balance(self, Balance_MODE):
+    def change_balance(self, Balance_MODE: str) -> None:
         def set_id(b_id):
             if global_value.balance_id != None:
                 self.position_change_all(
@@ -509,7 +506,7 @@ class IQ_Option:
     # _______________________        CANDLE      _____________________________
     # ________________________self.api.getcandles() wss________________________
 
-    def get_candles(self, ACTIVES, interval, count, endtime):
+    def get_candles(self, ACTIVES: str, interval: int, count: int, endtime: float) -> Optional[List[Dict]]:
         self.api.candles.candles_data = None
         while True:
             try:
@@ -518,7 +515,7 @@ class IQ_Option:
                     break
                 self.api.getcandles(
                     OP_code.ACTIVES[ACTIVES], interval, count, endtime)
-                while self.check_connect and self.api.candles.candles_data == None:
+                while self.check_connect() and self.api.candles.candles_data is None:
                     pass
                 if self.api.candles.candles_data != None:
                     break
@@ -699,7 +696,7 @@ class IQ_Option:
     # -----------------traders_mood----------------------
 
     def start_mood_stream(self, ACTIVES, instrument="turbo-option"):
-        if ACTIVES in self.subscribe_mood == False:
+        if ACTIVES not in self.subscribe_mood:
             self.subscribe_mood.append(ACTIVES)
 
         while True:
@@ -712,8 +709,8 @@ class IQ_Option:
                 time.sleep(5)
 
     def stop_mood_stream(self, ACTIVES, instrument="turbo-option"):
-        if ACTIVES in self.subscribe_mood == True:
-            del self.subscribe_mood[ACTIVES]
+        if ACTIVES in self.subscribe_mood:
+            self.subscribe_mood.remove(ACTIVES)
         self.api.unsubscribe_Traders_mood(OP_code.ACTIVES[ACTIVES], instrument)
 
     def get_traders_mood(self, ACTIVES):
@@ -788,9 +785,8 @@ class IQ_Option:
     def check_win_v3(self, id_number):
         while True:
             result = self.get_optioninfo_v2(10)
-            if result['msg']['closed_options'][0]['id'][0] == id_number and result['msg']['closed_options'][0]['id'][0] != None:
+            if result['msg']['closed_options'][0]['id'][0] == id_number and result['msg']['closed_options'][0]['id'][0] is not None:
                 return result['msg']['closed_options'][0]['win'], (result['msg']['closed_options'][0]['win_amount'] - result['msg']['closed_options'][0]['amount'] if result['msg']['closed_options'][0]['win'] != 'equal' else 0)
-                break
             time.sleep(1)
 
     # -------------------get infomation only for binary option------------------------
@@ -817,22 +813,19 @@ class IQ_Option:
                 return self.api.game_betinfo.isSuccessful, self.api.game_betinfo.dict
             else:
                 return self.api.game_betinfo.isSuccessful, None
-            time.sleep(self.suspend * 10)
 
     def get_optioninfo(self, limit):
         self.api.api_game_getoptions_result = None
         self.api.get_options(limit)
-        while self.api.api_game_getoptions_result == None:
-            pass
-
+        while self.api.api_game_getoptions_result is None:
+            time.sleep(0.001)
         return self.api.api_game_getoptions_result
 
     def get_optioninfo_v2(self, limit):
         self.api.get_options_v2_data = None
         self.api.get_options_v2(limit, "binary,turbo")
-        while self.api.get_options_v2_data == None:
-            pass
-
+        while self.api.get_options_v2_data is None:
+            time.sleep(0.001)
         return self.api.get_options_v2_data
 
     # __________________________BUY__________________________
@@ -899,7 +892,7 @@ class IQ_Option:
 
         return self.api.result, self.api.buy_multi_option[req_id]["id"]
 
-    def buy(self, price, ACTIVES, ACTION, expirations):
+    def buy(self, price: float, ACTIVES: str, ACTION: str, expirations: int) -> Tuple[Union[bool, Any], Optional[int]]:
         self.api.buy_multi_option = {}
         self.api.buy_successful = None
         # req_id = "buy"
@@ -932,15 +925,15 @@ class IQ_Option:
     def sell_option(self, options_ids):
         self.api.sell_option(options_ids)
         self.api.sold_options_respond = None
-        while self.api.sold_options_respond == None:
-            pass
+        while self.api.sold_options_respond is None:
+            time.sleep(0.001)
         return self.api.sold_options_respond
 
     def sell_digital_option(self, options_ids):
         self.api.sell_digital_option(options_ids)
         self.api.sold_digital_options_respond = None
-        while self.api.sold_digital_options_respond == None:
-            pass
+        while self.api.sold_digital_options_respond is None:
+            time.sleep(0.001)
         return self.api.sold_digital_options_respond
 # __________________for Digital___________________
 
@@ -960,8 +953,8 @@ class IQ_Option:
         self.api.strike_list = None
         self.api.get_strike_list(ACTIVES, duration)
         ans = {}
-        while self.api.strike_list == None:
-            pass
+        while self.api.strike_list is None:
+            time.sleep(0.001)
         try:
             for data in self.api.strike_list["msg"]["strike"]:
                 temp = {}
@@ -1033,7 +1026,7 @@ class IQ_Option:
     # thank thiagottjv
     # https://github.com/Lu-Yi-Hsun/iqoptionapi/issues/65#issuecomment-513998357
 
-    def buy_digital_spot(self, active, amount, action, duration):
+    def buy_digital_spot(self, active: str, amount: float, action: str, duration: int) -> Tuple[bool, Optional[int]]:
         # Expiration time need to be formatted like this: YYYYMMDDHHII
         # And need to be on GMT time
 
